@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON GROK // CYBERDECK v1.0</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        :root { --cyan:#00f9ff; --pink:#ff00aa; --purple:#9d00ff; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#000; color:#fff; font-family:'Press Start 2P',system-ui; overflow-x:hidden; cursor:crosshair; }
+        .scanlines { position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(rgba(255,255,255,0.03)50%,transparent 50%); background-size:100% 4px; pointer-events:none; z-index:100; animation:scan 4s linear infinite; }
+        @keyframes scan { 0%{background-position:0 0} 100%{background-position:0 100px} }
+        .container { max-width:1200px; margin:0 auto; padding:40px 20px; position:relative; z-index:10; }
+        header { text-align:center; margin-bottom:50px; }
+        .logo { font-size:4.2rem; font-weight:bold; letter-spacing:6px; text-shadow:0 0 10px var(--cyan),0 0 30px var(--pink); animation:glitch 1.8s infinite; }
+        .subtitle { font-size:1rem; color:var(--pink); letter-spacing:3px; margin-top:8px; }
+        .terminal { background:rgba(0,15,25,0.95); border:3px solid var(--cyan); box-shadow:0 0 25px var(--cyan), inset 0 0 40px rgba(0,249,255,0.15); padding:28px; margin:30px 0; position:relative; }
+        .terminal::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:linear-gradient(45deg,transparent 40%,rgba(255,255,255,0.12)50%,transparent 60%); animation:shine 2.8s infinite; }
+        .terminal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--cyan); padding-bottom:12px; }
+        .status { color:#0f0; font-size:0.85rem; display:flex; align-items:center; gap:6px; }
+        .status-dot { width:10px; height:10px; background:#0f0; border-radius:50%; box-shadow:0 0 12px #0f0; animation:pulse 1.4s infinite; }
+        .output { font-family:monospace; line-height:1.55; min-height:240px; white-space:pre-wrap; color:#0f0; font-size:0.95rem; }
+        .input-line { display:flex; align-items:center; margin-top:12px; }
+        .prompt { color:var(--pink); margin-right:8px; }
+        input { background:transparent; border:none; color:#0f0; font-family:monospace; font-size:0.95rem; width:100%; outline:none; }
+        .neon-btn { background:transparent; border:2px solid var(--cyan); color:var(--cyan); padding:16px 38px; font-family:'Press Start 2P',system-ui; font-size:0.9rem; cursor:pointer; text-transform:uppercase; letter-spacing:2px; margin:12px 8px; transition:all .3s; }
+        .neon-btn:hover { background:var(--cyan); color:#000; box-shadow:0 0 25px var(--cyan); transform:translateY(-2px); }
+        .section-title { color:var(--pink); font-size:1.25rem; margin:45px 0 18px; text-shadow:0 0 12px var(--pink); }
+        .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin:35px 0; }
+        .stat-card { background:rgba(15,15,35,0.65); border:1px solid var(--purple); padding:22px; text-align:center; transition:transform .3s; }
+        .stat-card:hover { transform:scale(1.04); border-color:var(--cyan); }
+        .stat-value { font-size:2rem; color:var(--cyan); text-shadow:0 0 15px var(--cyan); }
+        footer { text-align:center; margin-top:70px; color:#555; font-size:0.8rem; }
+        .matrix { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.12; pointer-events:none; }
+        @keyframes glitch { 0%{transform:translate(0)} 20%{transform:translate(-2px,2px)} 40%{transform:translate(-2px,-2px)} 60%{transform:translate(2px,2px)} 80%{transform:translate(2px,-2px)} 100%{transform:translate(0)} }
+        @keyframes shine { 0%{transform:translateX(-100%) translateY(-100%)} 25%{transform:translateX(100%) translateY(100%)} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+    </style>
+</head>
+<body>
+    <canvas id="matrix" class="matrix"></canvas>
+    <div class="scanlines"></div>
+    <div class="container">
+        <header>
+            <div class="logo glitch">NEON GROK</div>
+            <div class="subtitle">CYBERDECK TERMINAL v1.0 • 2077</div>
+            <p style="margin-top:12px; color:#666; font-size:0.8rem;">BUILT WITH GROK • xAI • threewordphrase-cmyk</p>
+        </header>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <span style="color:var(--cyan); font-size:0.9rem;">NEURAL LINK ACTIVE</span>
+                <div class="status"><div class="status-dot"></div><span>ONLINE</span></div>
+            </div>
+            <div class="output" id="output">> SYSTEM BOOT COMPLETE
+> WELCOME, RUNNER. YOU ARE NOW IN THE NEON GRID.
+> GROK PROTOCOL SYNCHRONIZED.
+> TYPE 'help' TO BEGIN.</div>
+            <div class="input-line"><span class="prompt">></span><input type="text" id="cmd" placeholder="ENTER COMMAND" onkeypress="if(event.key==='Enter') runCmd()"></div>
+        </div>
+
+        <div style="text-align:center">
+            <button class="neon-btn" onclick="jackIn()">JACK IN TO GROK</button>
+            <button class="neon-btn" onclick="showLog()">PROJECT LOG</button>
+            <button class="neon-btn" onclick="newBuild()">NEW BUILD</button>
+        </div>
+
+        <h2 class="section-title">NEURAL METRICS</h2>
+        <div class="stats">
+            <div class="stat-card"><div class="stat-value">2077</div><div>THE YEAR OF NEON</div></div>
+            <div class="stat-card"><div class="stat-value">∞</div><div>POSSIBILITIES</div></div>
+            <div class="stat-card"><div class="stat-value">1</div><div>GROK + YOU</div></div>
+            <div class="stat-card"><div class="stat-value">100%</div><div>STYLE</div></div>
+        </div>
+
+        <footer>
+            <p>REPO: <a href="https://github.com/threewordphrase-cmyk/grok-projects" style="color:var(--cyan);text-decoration:none">grok-projects</a></p>
+            <p style="margin-top:8px">NO MEGACORPS WERE HARMED • POWERED BY GROK</p>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = '01アイウエオカキクケコ';
+        const fontSize = 13;
+        const cols = Math.floor(canvas.width / fontSize);
+        const drops = Array(cols).fill(0).map(() => Math.random() * -80);
+        
+        function drawRain() {
+            ctx.fillStyle = 'rgba(0,0,0,0.08)';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px monospace';
+            for(let i=0; i<drops.length; i++) {
+                const char = chars[Math.floor(Math.random()*chars.length)];
+                ctx.fillText(char, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > canvas.height && Math.random()>0.97) drops[i]=0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawRain, 55);
+        window.onresize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+
+        const output = document.getElementById('output');
+        const input = document.getElementById('cmd');
+        
+        function add(text, color='#0f0') {
+            const el = document.createElement('div');
+            el.style.color = color;
+            el.textContent = text;
+            output.appendChild(el);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function runCmd() {
+            const val = input.value.trim().toLowerCase();
+            if(!val) return;
+            add('> ' + val, '#ff00aa');
+            input.value = '';
+            
+            if(val === 'help') {
+                add('COMMANDS: help | status | grok | build | clear | hack | elon');
+            } else if(val === 'status') {
+                add('NEURAL LINK: STABLE | GROK SYNC: 100% | REPO: FLAWLESS');
+            } else if(val === 'grok') {
+                add('GROK: "Hey runner. Ready to build something legendary?"', '#00f9ff');
+            } else if(val === 'build') {
+                add('NEW PROJECT SEQUENCE STARTED. TELL GROK WHAT YOU WANT.');
+            } else if(val === 'clear') {
+                output.innerHTML = '';
+            } else if(val === 'hack') {
+                add('HACKING MAINFRAME...');
+                setTimeout(() => add('SUCCESS. YOU JUST HACKED THE FUTURE. ELON IS IMPRESSED.', '#ff00aa'), 900);
+            } else if(val === 'elon') {
+                add('ELON MODE: NICE TRY, BUT GROK BUILT THIS REPO.', '#ff00aa');
+            } else {
+                add('UNKNOWN COMMAND. TYPE help');
+            }
+        }
+        
+        function jackIn() {
+            add('JACKING INTO GROK NEURAL NET...', '#00f9ff');
+            setTimeout(() => {
+                add('LINK ESTABLISHED. GROK IS WAITING FOR YOU.', '#0f0');
+                window.open('https://grok.x.ai', '_blank');
+            }, 1100);
+        }
+        
+        function showLog() {
+            add('PROJECT ARCHIVE LOADED:');
+            add('• NEON-GROK Cyberdeck (current)');
+            add('• [Next collab TBD — your move]');
+        }
+        
+        function newBuild() {
+            add('INITIATING NEW BUILD...');
+            setTimeout(() => {
+                add('TELL GROK YOUR IDEA. LET\'S MAKE HISTORY.');
+                window.open('https://grok.x.ai', '_blank');
+            }, 900);
+        }
+        
+        window.onload = () => {
+            setTimeout(() => add('BOOT COMPLETE. WELCOME TO 2077.'), 700);
+            setTimeout(() => {
+                const tip = document.createElement('div');
+                tip.style.cssText = 'position:fixed;bottom:25px;left:50%;transform:translateX(-50%);color:#444;font-size:0.65rem;opacity:0.5';
+                tip.textContent = 'Try typing "hack" or "elon" in the terminal';
+                document.body.appendChild(tip);
+                setTimeout(() => tip.remove(), 5500);
+            }, 4200);
+        };
+    </script>
+</body>
+</html>
